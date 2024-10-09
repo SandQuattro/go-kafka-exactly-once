@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-var topic = "test-topic"
-
 type TransactionalProducer struct {
 	Producer *kafka.Producer
 }
@@ -59,4 +57,9 @@ func (tp *TransactionalProducer) ProduceMessage(message, topic string) error {
 	}
 
 	return nil
+}
+
+func (tp *TransactionalProducer) Close() {
+	tp.Producer.Flush(5000)
+	tp.Producer.Close()
 }

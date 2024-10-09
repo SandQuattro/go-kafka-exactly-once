@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-var topic = "test-topic"
-
 type IdempotentProducer struct {
 	Producer *kafka.Producer
 }
@@ -24,4 +22,9 @@ func NewIdempotentProducer(servers ...string) *IdempotentProducer {
 	return &IdempotentProducer{
 		p,
 	}
+}
+
+func (ip *IdempotentProducer) Close() {
+	ip.Producer.Flush(5000)
+	ip.Producer.Close()
 }

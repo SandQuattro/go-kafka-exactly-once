@@ -14,7 +14,7 @@ func main() {
 
 func runInTransaction() {
 	transactionalProducer := transactional.NewTransactionalProducer("localhost:9091", "localhost:9092", "localhost:9093")
-	defer transactionalProducer.Producer.Close()
+	defer transactionalProducer.Close()
 
 	err := transactionalProducer.ProduceMessage("test", "test-topic")
 	if err != nil {
@@ -26,7 +26,7 @@ func runInTransaction() {
 
 func runInIdempotentMode() {
 	p := idempotent.NewIdempotentProducer("localhost:9091", "localhost:9092", "localhost:9093")
-	defer p.Producer.Close()
+	defer p.Close()
 
 	// idempotency check
 	txt := "same message many times"
@@ -44,4 +44,5 @@ func runInIdempotentMode() {
 		}
 		log.Println("Produced message:", txt)
 	}
+
 }
