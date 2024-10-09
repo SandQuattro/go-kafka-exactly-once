@@ -17,7 +17,7 @@ func main() {
 	}
 	defer c.Close()
 
-	topic := "my-topic"
+	topic := "test-topic"
 	err = c.SubscribeTopics([]string{topic}, nil)
 	if err != nil {
 		log.Fatalf("Failed to subscribe to topics: %s", err)

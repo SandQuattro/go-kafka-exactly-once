@@ -28,3 +28,26 @@ func (ip *IdempotentProducer) Close() {
 	ip.Producer.Flush(5000)
 	ip.Producer.Close()
 }
+
+func (ip *IdempotentProducer) ProduceMessage() error {
+	// idempotency check
+	txt := "same message many times"
+	topic := "test-topic"
+
+	msg := &kafka.Message{
+		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+		// Key:            []byte("key"),
+		Value: []byte(txt),
+	}
+
+	for i := 0; i < 10; i++ {
+		err := ip.Producer.Produce(msg, nil)
+		if err != nil {
+			log.Println("Failed to produce message:", err)
+			return err
+		}
+		log.Println("Produced message:", txt)
+	}
+
+	return nil
+}
