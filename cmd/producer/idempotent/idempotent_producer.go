@@ -29,24 +29,24 @@ func (ip *IdempotentProducer) Close() {
 	ip.Producer.Close()
 }
 
-func (ip *IdempotentProducer) ProduceMessage() error {
+func (ip *IdempotentProducer) ProduceMessage(topic string, keyF func() [20]string, message string) error {
 	// idempotency check
-	txt := "same message many times"
-	topic := "test-topic"
-
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		// Key:            []byte("key"),
-		Value: []byte(txt),
+		Value:          []byte(message),
 	}
 
 	for i := 0; i < 10; i++ {
+		// if key is not specified, then we use default partition distribution round-robin strategy
+		//this is for better partition distribution
+		msg.Key = []byte(keyF()[i%20])
+
 		err := ip.Producer.Produce(msg, nil)
 		if err != nil {
 			log.Println("Failed to produce message:", err)
 			return err
 		}
-		log.Println("Produced message:", txt)
+		log.Println("Produced message:", message)
 	}
 
 	return nil

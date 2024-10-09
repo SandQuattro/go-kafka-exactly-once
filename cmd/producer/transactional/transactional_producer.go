@@ -23,7 +23,7 @@ func NewTransactionalProducer(servers ...string) *TransactionalProducer {
 	return &TransactionalProducer{Producer: p}
 }
 
-func (tp *TransactionalProducer) ProduceMessage(message, topic string) error {
+func (tp *TransactionalProducer) ProduceMessage(topic string, keyF func() [20]string, message string) error {
 	// Initialize transactions
 	err := tp.Producer.InitTransactions(context.Background())
 	if err != nil {
@@ -40,8 +40,9 @@ func (tp *TransactionalProducer) ProduceMessage(message, topic string) error {
 	for i := 0; i < 10; i++ {
 		err = tp.Producer.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Key:            []byte("key"),
-			Value:          []byte(fmt.Sprintf("message-%d", i)),
+			// if key is not specified, then we use default partition distribution round-robin strategy
+			Key:   []byte(keyF()[i%20]),
+			Value: []byte(fmt.Sprintf("%s-%d", message, i)),
 		}, nil)
 		if err != nil {
 			log.Println("Failed to produce message:", err)
