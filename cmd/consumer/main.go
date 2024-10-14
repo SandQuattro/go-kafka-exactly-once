@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"log"
 )
@@ -15,7 +16,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create consumer: %s", err)
 	}
-	defer c.Close()
+	defer func() {
+		err = errors.Join(err, c.Close())
+	}()
 
 	topic := "test-topic"
 	err = c.SubscribeTopics([]string{topic}, nil)
