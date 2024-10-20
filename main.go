@@ -9,7 +9,7 @@ import (
 
 func main() {
 	runInTransaction()
-	runInIdempotentMode()
+	// runInIdempotentMode()
 }
 
 func runInTransaction() {

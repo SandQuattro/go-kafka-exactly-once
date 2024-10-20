@@ -44,10 +44,23 @@ func (tp *TransactionalProducer) ProduceMessage(topic string, keyF func() [20]st
 			Key:   []byte(keyF()[i%20]),
 			Value: []byte(fmt.Sprintf("%s-%d", message, i)),
 		}, nil)
+
+		// Simulate an error on the 5th message
+		if i == 5 {
+			log.Println("Simulating failure on message 5")
+			err = fmt.Errorf("simulated error on 5th message")
+		}
+
 		if err != nil {
-			log.Println("Failed to produce message:", err)
+			log.Printf("Error producing message %d: %s\n", i, err)
+			// Abort the transaction and exit on failure
+			if abortErr := tp.Producer.AbortTransaction(nil); abortErr != nil {
+				log.Fatalf("Failed to abort transaction: %s", abortErr)
+			}
+			log.Println("Transaction aborted due to error.")
 			return err
 		}
+
 		log.Println("Produced message:", fmt.Sprintf("message-%d", i))
 	}
 
